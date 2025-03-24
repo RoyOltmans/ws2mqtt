@@ -3,6 +3,8 @@
 #include "wifi_inc.h"
 #include "wisafe2_packets.h"
 #include "wisafe2_tx.h"
+#include <esp_system.h>
+#include <string.h>
 
 extern PubSubClient mqttClient;
 
@@ -130,9 +132,9 @@ void announceMQTTBridgeSensorEntity(char* name, char* sensor, char* dev_class, c
 	if (!enabled)
 		doc["en"] = false;
 	doc["icon"] = icon;
-	if (dev_class!="None")
+	if (strcmp(dev_class, "None") != 0)
 		doc["dev_cla"] = dev_class;
-	if (unit!="None")
+	if (strcmp(unit, "None") != 0)
 		doc["unit_of_meas"] = unit;
 	char stattopic[200];
 	sprintf(stattopic, "ws2mqtt/bridge_%08x/%s", DEVICE_ID, sensor);
@@ -195,9 +197,9 @@ void loopBridgeSensors () {
 		sendMQTTBridgeSensor((char*)"ssid", (char*)WiFi.SSID().c_str());
 
 		// Uptime
-		char uptime[5];
-		sprintf(uptime, "%d", esp_timer_get_time()/1000000);
-		sendMQTTBridgeSensor((char*)"esp_uptime", (char*)uptime);
+		char uptime[32];  // Increased buffer size for safety
+		sprintf(uptime, "%lld", (long long)(esp_timer_get_time() / 1000000));
+		sendMQTTBridgeSensor((char*)"esp_uptime", uptime);
 
 		esp_reset_reason_t reason = esp_reset_reason();
 		char reason_str[20];
@@ -235,7 +237,12 @@ void loopBridgeSensors () {
 		sendMQTTBridgeSensor((char*)"esp_reset_reason", (char*)reason_str);
 
 		// ESP Chip
-		sendMQTTBridgeSensor((char*)"esp_model", (char*)ESP.getChipModel());
+		// ... in loopBridgeSensors() or a helper function:
+        esp_chip_info_t chip_info;
+        esp_chip_info(&chip_info);
+        char chipModel[32];
+        sprintf(chipModel, "ESP32 %d cores, rev %d", chip_info.cores, chip_info.revision);
+        sendMQTTBridgeSensor((char*)"esp_model", chipModel);
 
 		lastSensorPush = millis();
 	}

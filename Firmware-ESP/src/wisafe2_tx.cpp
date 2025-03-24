@@ -5,6 +5,7 @@
 #include "config.h"
 #include "wisafe2_packets.h"
 #include "spi_uart.h"
+#include "wisafe2_protocol.h"
 
 unsigned long lastTxAt = 0;
 

@@ -15,7 +15,7 @@ void handleAlarmEvent(uint8_t* msg, int length) {
 	pkt_rx_event_alarm_t pkt;
 	memcpy(&pkt, msg, sizeof(pkt));
 
-	Serial.printf("Alarm event received from device %d cmd %02x type %02x\n", (unsigned long)pkt.device_id, pkt.cmd, pkt.device_type);
+	Serial.printf("Alarm event received from device %lu cmd %02x type %02x\n", (unsigned long)pkt.device_id, pkt.cmd, pkt.device_type);
 
 	sendMQTTState(pkt.device_id, (char *)"alarm", true);
 	sendMQTTBridgeEvent();
@@ -25,7 +25,7 @@ void handleAlarmOffEvent(uint8_t* msg, int length) {
 	pkt_rx_event_alarm_off_t pkt;
 	memcpy(&pkt, msg, sizeof(pkt));
 
-	Serial.printf("Alarm off event received from device %d cmd %02x type %02x\n", (unsigned long)pkt.device_id, pkt.cmd, pkt.device_type);
+	Serial.printf("Alarm off event received from device %lu cmd %02x type %02x\n", (unsigned long)pkt.device_id, pkt.cmd, pkt.device_type);
 
 	sendMQTTState(pkt.device_id, (char *)"alarm", false);
 }
@@ -34,7 +34,7 @@ void handleButtonEvent(uint8_t* msg, int length) {
 	pkt_rx_event_button_t pkt;
 	memcpy(&pkt, msg, sizeof(pkt));
 
-	Serial.printf("Button press received from device %d cmd %02x\n", (unsigned long)pkt.device_id, pkt.cmd);
+	Serial.printf("Button press received from device %lu cmd %02x\n", (unsigned long)pkt.device_id, pkt.cmd);
 
 	sendMQTTButtonEvent(pkt.device_id);
 	sendMQTTBridgeEvent();
@@ -44,7 +44,7 @@ void handleError(uint8_t* msg, int length) {
 	pkt_rx_error_t pkt;
 	memcpy(&pkt, msg, sizeof(pkt));
 
-	Serial.printf("Error received from device %d cmd %02x error %02x\n", (unsigned long)pkt.device_id, pkt.cmd, pkt.error_flags);
+	Serial.printf("Error received from device %lu cmd %02x error %02x\n", (unsigned long)pkt.device_id, pkt.cmd, pkt.error_flags);
 
 	device_state_t ds;
 	ds.sid = pkt.sid;
@@ -63,7 +63,7 @@ void handleUpdateSIDMapResponse(uint8_t* msg, int length) {
 	memcpy(&pkt, msg, sizeof(pkt));
 
 	uint64_t sidmap = pkt.sidmap;
-	Serial.printf("Update SID Map received. SID map: %016x\n", sidmap);
+	Serial.printf("Update SID Map received. SID map: %016llx\n", (unsigned long long)sidmap);
 
 	for (char sid = 0; sid < 64; sid++) {
 		if ((sidmap >> sid) & 0x01) {
