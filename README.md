@@ -1,3 +1,38 @@
+# Updated version - ESP32 WROOM 32D
+
+I Wanted the new features of from MattFryer based on the base version of Tho85, I have been using this setup for a while with pleasure!
+Thank you Tho85 and MattFryer for all the effort and time! 
+See the original code from Tho85 https://github.com/Tho85/ws2mqtt and the code from MattFryer https://github.com/MattFryer/ws2mqtt
+
+I had trouble with compiling and building the code via platformio based on MattFryer setup, this was based on a fresh install. 
+My board a ESP32-WROOM-32D, I used this details for in platformio.ini:
+[env]
+platform = espressif32
+board = esp32dev
+framework = arduino
+
+Afterwards I made multiple corrections to get it to compile, below a summary:
+
+**DEVICE_ID Conflict:**  
+  - Removed (or commented out) the `DEVICE_ID` definition in **wisafe2_protocol.h** so that the value defined in **config.h** (0x317E33) is used consistently.
+
+**Packet Structures & Macros:**  
+  - Ensured that the packet structures for silence and emergency messages (`pkt_tx_silence_button_t` and `pkt_tx_emergency_button_t`) are defined in **wisafe2_protocol.h**.
+  - Defined the corresponding macros (`SPI_TX_SILENCE_BUTTON`, `SPI_TX_EMERGENCY_BUTTON`, and `SPI_STOP_WORD`) in the same header.
+
+**ESP32 Chip Info:**  
+  - Replaced the ESP8266-specific call `ESP.getChipModel()` in **homeassistant.cpp** with ESP32-compatible code using `esp_chip_info()` to retrieve chip details.
+
+**String Comparison Fix:**  
+  - Changed direct pointer comparisons (e.g., `if (unit != "None")`) to use `strcmp()` for proper C-string comparison.
+  - Added `#include <string.h>` at the top of **homeassistant.cpp** to support the `strcmp()` function.
+
+**Format Specifier Corrections:**  
+  - Updated `sprintf()` calls to match variable types:
+    - In **homeassistant.cpp**, replaced `%d` with `%lld` for printing `int64_t` uptime values and increased the buffer size.
+    - In **wisafe2_rx.cpp**, replaced `%d` with `%lu` for printing `device_id` (cast as `unsigned long`).
+    - Changed `%x` to `%llx` (with a cast to `(unsigned long long)`) when printing 64-bit hexadecimal values like the SID map.
+
 # ws2mqtt - WiSafe2 to MQTT gateway
 
 ws2mqtt is an inofficial gateway to connect WiSafe2 smoke, heat and CO detectors to your smart home.
